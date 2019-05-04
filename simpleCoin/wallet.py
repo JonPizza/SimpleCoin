@@ -23,20 +23,22 @@ import time
 import base64
 import ecdsa
 
-
 def wallet():
     response = None
-    while response not in ["1", "2", "3"]:
+    while response not in ["1", "2", "3", "4"]:
         response = input("""What do you want to do?
         1. Generate new wallet
         2. Send coins to another wallet
-        3. Check transactions\n""")
+        3. Check transactions
+        4. Quit\n""")
     if response == "1":
         # Generate new wallet
         print("""=========================================\n
 IMPORTANT: save this credentials or you won't be able to recover your wallet\n
 =========================================\n""")
         generate_ECDSA_keys()
+        return True # True will let the wallet keep running
+
     elif response == "2":
         addr_from = input("From: introduce your wallet address (public key)\n")
         private_key = input("Introduce your private key\n")
@@ -48,8 +50,14 @@ IMPORTANT: save this credentials or you won't be able to recover your wallet\n
         response = input("y/n\n")
         if response.lower() == "y":
             send_transaction(addr_from, private_key, addr_to, amount)
-    else:  # Will always occur when response == 3.
+        return True # True will let the wallet keep running
+
+    elif response == "3":
         check_transactions()
+        return True # True will let the wallet keep running
+
+    elif response == "4":
+        return False # False will stop the wallet
 
 
 def send_transaction(addr_from, private_key, addr_to, amount):
@@ -76,7 +84,7 @@ def send_transaction(addr_from, private_key, addr_to, amount):
         headers = {"Content-Type": "application/json"}
 
         res = requests.post(url, json=payload, headers=headers)
-        print(res.text)
+        print(res.text) # TODO: Make this look nicer/optionally look friendlier
     else:
         print("Wrong address or key length! Verify and try again.")
 
@@ -132,5 +140,6 @@ if __name__ == '__main__':
         You can find more help at: https://github.com/cosme12/SimpleCoin\n
         Make sure you are using the latest version or you may end in
         a parallel chain.\n\n\n""")
-    wallet()
-    input("Press ENTER to exit...")
+    while wallet() == True: # Call wallet until it returns False
+        print("\n") # Formatting thing
+    input("\nPress ENTER to exit...")
